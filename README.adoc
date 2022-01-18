@@ -1,0 +1,30 @@
+= Node Tool Wrapper
+
+Some OSS projects have a README that says what version of Node to download and what version of npm/yarn/pnpm/etc. to use.
+
+Some projects have no information and leave you to guess.
+
+This project is inspired by Gradle's Wrapper.
+
+== Example
+
+1. Download `.ntw.sh` to your project's root directory.
+2. Create a `yarnw` script that looks like this:
++
+[source,bash]
+----
+#!/bin/bash
+
+. .ntw.sh
+
+selectNode v16.13.1
+selectTool yarn 1.22.17
+
+exec yarn "$@"
+----
++
+This will download the chosen node for your platform.
+Then it will download yarn the version of yarn you choose.
+`./yarnw` will function exactly like `yarn`.
+
+You can check in `yarnw` and `.ntw.sh` to your VCS.

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+. .ntw.sh
+
+selectNode v16.13.1
+selectTool npm 8.3.1
+
+exec npm "$@"

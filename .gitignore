@@ -1,0 +1,13 @@
+# JetBrains template
+/.idea/
+/*.iws
+/*.iml
+/*.ipr
+/out/
+/.idea_modules/
+
+# Node
+node_modules/
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
