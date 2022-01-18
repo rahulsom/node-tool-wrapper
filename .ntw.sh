@@ -115,16 +115,52 @@ selectTool() {
 
 update() {
   info "Updating ${BASH_SOURCE[0]} ..."
+  cp "${NTW_HOME}/repo/.ntw.sh" "${BASH_SOURCE[0]}"
+  info "... done"
 }
 
 checkForUpdate() {
   debug "Checking for update..."
+  if [ ! -f "${NTW_HOME}/last-update-check" ]; then
+    debug "No last-update-check file found. Setting do_update_cache to 1"
+    echo 0 > "${NTW_HOME}/last-update-check"
+    do_update_cache=1
+  else
+    debug "last-update-check file found. Reading"
+    last_update_check=$(cat "${NTW_HOME}/last-update-check")
+    if [ $(( $(date +%s) - $last_update_check )) -gt 604800 ]; then
+      debug "last-update-check is older than 7 days. Setting do_update_cache to 1"
+      do_update_cache=1
+    else
+      debug "last-update-check is younger than 7 days. Setting do_update_cache to 0"
+      do_update_cache=0
+    fi
+  fi
+
+  if [ $do_update_cache -eq 1 ]; then
+    date +%s > "${NTW_HOME}/last-update-check"
+    if [ -d "${NTW_HOME}/repo" ]; then
+      (cd "${NTW_HOME}/repo"; git pull)
+    else
+      git clone https://github.com/rahulsom/node-tool-wrapper.git "${NTW_HOME}/repo"
+    fi
+  fi
+
+  cmp -s "${NTW_HOME}/repo/.ntw.sh" "${BASH_SOURCE[0]}" || warn "Update available for node-tool-wrapper. Run './${BASH_SOURCE[0]} update' to update"
 }
 
 if [[ "${BASH_SOURCE[0]}" = "${0}" ]]; then
   debug "script ${BASH_SOURCE[0]} is top level ..."
-  update
+  if [ "$1" = "update" ]; then
+    update
+  fi
 else
   debug "script ${BASH_SOURCE[0]} is being sourced ..."
-  checkForUpdate
+  if [ "$CI" = "" ]; then
+    NTW_OFFLINE=1
+    checkForUpdate
+  fi
+  if [ "$NTW_OFFLINE" != "1" ]; then
+    checkForUpdate
+  fi
 fi
