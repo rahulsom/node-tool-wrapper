@@ -44,3 +44,4 @@ done
 chmod +x "${TOOL_PACKAGE}w"
 
 curl -sL https://raw.githubusercontent.com/rahulsom/node-tool-wrapper/main/.ntw.sh > .ntw.sh
+chmod +x .ntw.sh
