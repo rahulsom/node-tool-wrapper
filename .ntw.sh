@@ -1,10 +1,7 @@
 #!/bin/bash
 set -e
 
-NTW_HOME=${NTW_HOME:-"$HOME/.ntw"}
 NTW_LOG_LEVEL=${NTW_LOG_LEVEL:-1}
-NTW_NODE_DIST_URL=${NTW_NODE_DIST_URL:-"https://nodejs.org/dist"}
-NTW_NPM_URL=${NTW_NPM_URL:-"https://registry.npmjs.org/"}
 
 COLOR_RESET="\033[0m"
 COLOR_BLACK="\033[0;30m"
@@ -29,10 +26,27 @@ warn() {
 error() {
   log 0 "${COLOR_RED}" "ERROR - $1"
 }
+info "NTW_LOG_LEVEL: NTW_LOG_LEVEL"
 
-debug "NTW_HOME: $NTW_HOME"
-debug "NTW_NODE_DIST_URL: $NTW_NODE_DIST_URL"
-debug "NTW_NPM_URL: $NTW_NPM_URL"
+NTW_HOME=${NTW_HOME:-"$HOME/.ntw"}
+info "NTW_HOME: $NTW_HOME"
+
+NTW_NODE_DIST_URL=${NTW_NODE_DIST_URL:-"https://nodejs.org/dist"}
+info "NTW_NODE_DIST_URL: $NTW_NODE_DIST_URL"
+
+if [ -z $NTW_NPM_URL ]; then
+  if [ -f .npmrc ]; then
+    npmrcUrl=$(cat .npmrc | grep -E "^registry *= *" | sed -e "s/ //g" | cut -d '=' -f 2)
+    if [ -n "$npmrcUrl" ]; then
+      debug "Found registry in .npmrc: $npmrcUrl. Using that to download npm packages."
+      NTW_NPM_URL=$npmrcUrl
+    fi
+  fi
+fi
+if [ -z $NTW_NPM_URL ]; then
+  NTW_NPM_URL="https://registry.npmjs.org/"
+fi
+info "NTW_NPM_URL: $NTW_NPM_URL"
 
 # Usage:
 #   selectNode <Version>
@@ -97,6 +111,14 @@ selectTool() {
   debug "selectTool $1 $2"
   local toolName=$1
   local npmUrl=${NTW_NPM_URL}
+  if [ -f .npmrc ]; then
+    npmrcUrl=$(cat .npmrc | grep -E "^registry *= *" | sed -e "s/ //g" | cut -d '=' -f 2)
+    if [ -n "$npmrcUrl" ]; then
+      debug "Found registry in .npmrc: $npmrcUrl. Using that to download"
+      npmUrl=$npmrcUrl
+    fi
+  fi
+  debug "npmUrl: $npmUrl"
   local version=$2
 
   if which "${toolName}" >/dev/null 2>&1; then
