@@ -26,5 +26,12 @@ exec yarn "$@"
 This will download the chosen node for your platform.
 Then it will download yarn the version of yarn you choose.
 `./yarnw` will function exactly like `yarn`.
++
+Optionally, you can add this before sourcing `.ntw.sh` if you have a corporate proxy.
++
+[source,bash]
+----
+export NTW_NODE_DIST_URL=https://artifactory.mycompany.comp/nodejs-dist
+----
 
 You can check in `yarnw` and `.ntw.sh` to your VCS.
