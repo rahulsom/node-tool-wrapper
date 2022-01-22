@@ -39,7 +39,7 @@ done
   echo "selectNode v${NODE_VERSION}"
   echo "selectTool ${TOOL_PACKAGE} ${NPM_VERSION}"
   echo ""
-  echo "${TOOL_PACKAGE} \$@"
+  echo "${TOOL_PACKAGE} \"\$@\""
 } > "${TOOL_PACKAGE}w"
 chmod +x "${TOOL_PACKAGE}w"
 
