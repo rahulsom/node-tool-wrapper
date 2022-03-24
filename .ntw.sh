@@ -64,7 +64,7 @@ selectNode() {
   local baseUrl=${NTW_NODE_DIST_URL}
   local version=$1
   local os=${2:-$(uname -s | tr '[:upper:]' '[:lower:]')}
-  local arch=${3:-$(uname -m | sed -e 's/^aarch64$/arm64/g')}
+  local arch=${3:-$(uname -m | sed -e 's/^aarch64$/arm64/g' | sed -e 's/^x86_64/x64/g')}
 
   local filename="node-$version-$os-$arch.tar.gz"
   local node_url="${baseUrl}/${version}/node-${version}-${os}-${arch}.tar.gz"
@@ -145,12 +145,12 @@ checkForUpdate() {
   debug "Checking for update..."
   if [ ! -f "${NTW_HOME}/last-update-check" ]; then
     debug "No last-update-check file found. Setting do_update_cache to 1"
-    echo 0 > "${NTW_HOME}/last-update-check"
+    echo 0 >"${NTW_HOME}/last-update-check"
     do_update_cache=1
   else
     debug "last-update-check file found. Reading"
     last_update_check=$(cat "${NTW_HOME}/last-update-check")
-    if [ $(( $(date +%s) - $last_update_check )) -gt 604800 ]; then
+    if [ $(($(date +%s) - $last_update_check)) -gt 604800 ]; then
       debug "last-update-check is older than 7 days. Setting do_update_cache to 1"
       do_update_cache=1
     else
@@ -160,9 +160,12 @@ checkForUpdate() {
   fi
 
   if [ $do_update_cache -eq 1 ]; then
-    date +%s > "${NTW_HOME}/last-update-check"
+    date +%s >"${NTW_HOME}/last-update-check"
     if [ -d "${NTW_HOME}/repo" ]; then
-      (cd "${NTW_HOME}/repo"; git pull)
+      (
+        cd "${NTW_HOME}/repo"
+        git pull
+      )
     else
       git clone https://github.com/rahulsom/node-tool-wrapper.git "${NTW_HOME}/repo"
     fi
