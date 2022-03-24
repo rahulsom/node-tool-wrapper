@@ -30,6 +30,9 @@ info "NTW_LOG_LEVEL: NTW_LOG_LEVEL"
 
 NTW_HOME=${NTW_HOME:-"$HOME/.ntw"}
 info "NTW_HOME: $NTW_HOME"
+if [ ! -d "$NTW_HOME" ]; then
+  mkdir -p "$NTW_HOME"
+fi
 
 NTW_NODE_DIST_URL=${NTW_NODE_DIST_URL:-"https://nodejs.org/dist"}
 info "NTW_NODE_DIST_URL: $NTW_NODE_DIST_URL"
