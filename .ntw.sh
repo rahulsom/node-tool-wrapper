@@ -3,6 +3,8 @@
 set -E
 # exit immediately if a command exits with a non-zero status
 set -e
+# the return value of a pipeline is the value of the last (rightmost) command to exit with a non-zero status, or zero if all commands in the pipeline exit successfully.
+set -o pipefail
 
 NTW_LOG_LEVEL=${NTW_LOG_LEVEL:-1}
 
