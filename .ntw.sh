@@ -3,6 +3,8 @@
 set -E
 # exit immediately if a command exits with a non-zero status
 set -e
+# exit immediately if a command tries to use an undefined variable
+set -u
 # the return value of a pipeline is the value of the last (rightmost) command to exit with a non-zero status, or zero if all commands in the pipeline exit successfully.
 set -o pipefail
 
@@ -42,7 +44,7 @@ fi
 NTW_NODE_DIST_URL=${NTW_NODE_DIST_URL:-"https://nodejs.org/dist"}
 info "NTW_NODE_DIST_URL: $NTW_NODE_DIST_URL"
 
-if [ -z $NTW_NPM_URL ]; then
+if [ -z ${NTW_NPM_URL:''} ]; then
   if [ -f .npmrc ]; then
     npmrcUrl=$(cat .npmrc | grep -E "^registry *= *" | sed -e "s/ //g" | cut -d '=' -f 2)
     if [ -n "$npmrcUrl" ]; then
@@ -51,7 +53,7 @@ if [ -z $NTW_NPM_URL ]; then
     fi
   fi
 fi
-if [ -z $NTW_NPM_URL ]; then
+if [ -z ${NTW_NPM_URL:''} ]; then
   NTW_NPM_URL="https://registry.npmjs.org/"
 fi
 info "NTW_NPM_URL: $NTW_NPM_URL"
@@ -61,7 +63,7 @@ info "NTW_NPM_URL: $NTW_NPM_URL"
 # Examples:
 #   selectNode v16.13.1
 selectNode() {
-  debug "selectNode $1 $2 $3"
+  debug "selectNode $1"
   debug "PWD: $(pwd)"
   local pwdmd5
   pwdmd5="$(pwd | md5sum | cut -d ' ' -f 1)"
@@ -189,7 +191,7 @@ if [[ "${BASH_SOURCE[0]}" = "${0}" ]]; then
   fi
 else
   debug "script ${BASH_SOURCE[0]} is being sourced ..."
-  if [ "$CI" = "" ]; then
+  if [ "${CI:''}" = "" ]; then
     NTW_OFFLINE=1
     checkForUpdate
   fi
