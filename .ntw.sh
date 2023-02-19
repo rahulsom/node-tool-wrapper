@@ -110,7 +110,7 @@ selectNode() {
     tar xzf "$cache_location" --directory "$home_base"
   fi
 
-  debug "Setting NODE_HOME='$node_home'"
+  info "Setting NODE_HOME='$node_home'"
   export NODE_HOME="$node_home"
   export PATH="$NODE_HOME/bin:$PATH"
 }
