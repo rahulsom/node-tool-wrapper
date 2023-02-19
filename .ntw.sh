@@ -98,7 +98,7 @@ selectNode() {
       warn "Cache invalid. Downloading $node_url to $cache_location"
       curl -s "$node_url" -o "$cache_location"
     else
-      info "Using cached $filename"
+      info "Using cached $filename from $cache_location"
     fi
   else
     info "Tar doesn't exist locally. Downloading $node_url to $cache_location"
