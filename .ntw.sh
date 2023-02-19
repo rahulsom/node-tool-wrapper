@@ -18,7 +18,7 @@ COLOR_RED="\033[0;31m"
 
 log() {
   if [ ${NTW_LOG_LEVEL} -ge $1 ]; then
-    echo -e "${2}[$(date +'%Y-%m-%dT%H:%M:%S%z')] $3${COLOR_RESET}"
+    echo -e "${2}[$(date +'%Y-%m-%dT%H:%M:%S%z')] $3${COLOR_RESET}" >&2
   fi
 }
 debug() {
