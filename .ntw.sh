@@ -33,7 +33,7 @@ warn() {
 error() {
   log 0 "${COLOR_RED}" "ERROR - $1"
 }
-info "NTW_LOG_LEVEL: NTW_LOG_LEVEL"
+info "NTW_LOG_LEVEL: $NTW_LOG_LEVEL"
 
 NTW_HOME=${NTW_HOME:-"$HOME/.ntw"}
 info "NTW_HOME: $NTW_HOME"
