@@ -1,4 +1,6 @@
 #!/bin/bash
+# inherit trap on ERR in shell functions, command substitutions, and commands executed in a subshell environment
+set -E
 # exit immediately if a command exits with a non-zero status
 set -e
 
