@@ -1,4 +1,5 @@
 #!/bin/bash
+# exit immediately if a command exits with a non-zero status
 set -e
 
 NTW_LOG_LEVEL=${NTW_LOG_LEVEL:-1}
