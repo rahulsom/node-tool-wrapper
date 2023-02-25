@@ -147,8 +147,7 @@ selectTool() {
 
 update() {
   info "Updating ${BASH_SOURCE[0]} ..."
-  cp "${NTW_HOME}/repo/.ntw.sh" "${BASH_SOURCE[0]}"
-  info "... done"
+  exec cp "${NTW_HOME}/repo/.ntw.sh" "${BASH_SOURCE[0]}"
 }
 
 checkForUpdate() {
