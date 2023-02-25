@@ -11,7 +11,6 @@ set -o pipefail
 NTW_LOG_LEVEL=${NTW_LOG_LEVEL:-1}
 NTW_LOG_FILE=${NTW_LOG_FILE:-"/tmp/ntw.log"}
 PID=$$
-echo "NTW_LOG_FILE: $NTW_LOG_FILE"
 
 COLOR_BLACK=0
 COLOR_BLUE=4
@@ -23,13 +22,13 @@ log() {
   if [ ${NTW_LOG_LEVEL} -ge $1 ]; then
     printf "%s $(tput setaf $2)%5s$(tput sgr0) - %s\n" "$TS" "$3" "$4" >&2
   fi
-  printf "{\"pid\": %d, \"ts\": \"%s\", \"level\": \"%s\", \"message\": \"%s\"}\n" "$PID" "$TS" "$3" "$4" >> "$NTW_LOG_FILE"
+  printf "{\"pid\":%d,\"ts\":\"%s\",\"level\":\"%s\",\"message\":\"%s\"}\n" "$PID" "$TS" "$3" "$4" >>"$NTW_LOG_FILE"
 }
 debug() {
   log 3 "${COLOR_BLACK}" "DEBUG" "$1"
 }
 info() {
-  log 2 "${COLOR_BLUE}" "INFO"  "$1"
+  log 2 "${COLOR_BLUE}" "INFO" "$1"
 }
 warn() {
   log 1 "${COLOR_ORANGE}" "WARN" "$1"
@@ -187,7 +186,7 @@ checkForUpdate() {
   cmp -s "${NTW_HOME}/repo/.ntw.sh" "${BASH_SOURCE[0]}" || warn "Update available for node-tool-wrapper. Run './${BASH_SOURCE[0]} update' to update"
 }
 
-if [[ "${BASH_SOURCE[0]}" = "${0}" ]]; then
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   debug "script ${BASH_SOURCE[0]} is top level ..."
   if [ "$1" = "update" ]; then
     update
