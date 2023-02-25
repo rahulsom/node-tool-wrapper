@@ -10,15 +10,14 @@ set -o pipefail
 
 NTW_LOG_LEVEL=${NTW_LOG_LEVEL:-1}
 
-COLOR_RESET="\033[0m"
-COLOR_BLACK="\033[0;30m"
-COLOR_BLUE="\033[0;34m"
-COLOR_ORANGE="\033[0;33m"
-COLOR_RED="\033[0;31m"
+COLOR_BLACK=0
+COLOR_BLUE=4
+COLOR_ORANGE=3
+COLOR_RED=1
 
 log() {
   if [ ${NTW_LOG_LEVEL} -ge $1 ]; then
-    echo -e "${2}[$(date +'%Y-%m-%dT%H:%M:%S%z')] $3${COLOR_RESET}" >&2
+    echo -e "$(tput setaf $2)[$(date +'%Y-%m-%dT%H:%M:%S%z')] $3$(tput sgr0)" >&2
   fi
 }
 debug() {
