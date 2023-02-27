@@ -47,7 +47,7 @@ fi
 NTW_NODE_DIST_URL=${NTW_NODE_DIST_URL:-"https://nodejs.org/dist"}
 info "NTW_NODE_DIST_URL: $NTW_NODE_DIST_URL"
 
-if [ -z ${NTW_NPM_URL:''} ]; then
+if [ -z ${NTW_NPM_URL:-''} ]; then
   if [ -f .npmrc ]; then
     npmrcUrl=$(cat .npmrc | grep -E "^registry *= *" | sed -e "s/ //g" | cut -d '=' -f 2)
     if [ -n "$npmrcUrl" ]; then
@@ -56,7 +56,7 @@ if [ -z ${NTW_NPM_URL:''} ]; then
     fi
   fi
 fi
-if [ -z ${NTW_NPM_URL:''} ]; then
+if [ -z ${NTW_NPM_URL:-''} ]; then
   NTW_NPM_URL="https://registry.npmjs.org/"
 fi
 info "NTW_NPM_URL: $NTW_NPM_URL"
@@ -193,11 +193,11 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   fi
 else
   debug "script ${BASH_SOURCE[0]} is being sourced ..."
-  if [ "${CI:''}" = "" ]; then
+  if [ "${CI:-''}" = "" ]; then
     NTW_OFFLINE=1
     checkForUpdate
   fi
-  if [ "$NTW_OFFLINE" != "1" ]; then
+  if [ "${NTW_OFFLINE:-'0'}" != "1" ]; then
     checkForUpdate
   fi
 fi
