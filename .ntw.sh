@@ -194,10 +194,10 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 else
   debug "script ${BASH_SOURCE[0]} is being sourced ..."
   if [ "${CI:-''}" = "" ]; then
-    NTW_OFFLINE=1
-    checkForUpdate
-  fi
-  if [ "${NTW_OFFLINE:-'0'}" != "1" ]; then
+    info "Running on CI. Skipping ntw update check."
+  elif [ "${NTW_OFFLINE:-'0'}" = "1" ]; then
+    info "NTW_OFFLINE=1. Skipping ntw update check."
+  else
     checkForUpdate
   fi
 fi
