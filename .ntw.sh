@@ -17,10 +17,30 @@ COLOR_BLUE=4
 COLOR_ORANGE=3
 COLOR_RED=1
 
+if [ "${USE_TPUT:-}" = "" ]; then
+  set +e
+  tput sgr0 2>/tmp/tput.txt
+  if [ $? -eq 0 ]; then
+    if [ $(wc -c /tmp/tput) -gt 3 ]; then
+      USE_TPUT=0
+    else
+      USE_TPUT=1
+    fi
+  else
+    USE_TPUT=0
+  fi
+fi
 log() {
   TS="$(date +'%Y-%m-%dT%H:%M:%S%z')"
   if [ ${NTW_LOG_LEVEL} -ge $1 ]; then
-    printf "%s $(tput setaf $2)%5s$(tput sgr0) - %s\n" "$TS" "$3" "$4" >&2
+    if [ "${USE_TPUT}" = "1" ]; then
+      COLOR_SET=$(tput setaf $2)
+      COLOR_RESET=$(tput sgr0)
+    else
+      COLOR_SET=""
+      COLOR_RESET=""
+    fi
+    printf "%s ${COLOR_SET}%5s${COLOR_RESET} - %s\n" "$TS" "$3" "$4" >&2
   fi
   printf "{\"pid\":%d,\"ts\":\"%s\",\"level\":\"%s\",\"message\":\"%s\"}\n" "$PID" "$TS" "$3" "$4" >>"$NTW_LOG_FILE"
 }
