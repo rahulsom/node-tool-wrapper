@@ -21,7 +21,7 @@ if [ "${USE_TPUT:-}" = "" ]; then
   set +e
   tput sgr0 2>/tmp/tput.txt
   if [ $? -eq 0 ]; then
-    if [ $(wc -c /tmp/tput.txt) -gt 3 ]; then
+    if [ $(wc -c /tmp/tput.txt | tr -s " " | cut -d " " -f 2) -gt 3 ]; then
       USE_TPUT=0
     else
       USE_TPUT=1
