@@ -157,10 +157,11 @@ selectTool() {
 
   if which "${toolName}" >/dev/null 2>&1; then
     debug "Tool ${toolName} already installed. Checking version"
-    if [ "$("${toolName}" --version)" = "$version" ]; then
+    currentVersion=$("${toolName}" --version)
+    if [ "${currentVersion}" = "$version" ]; then
       info "Tool ${toolName} is already at version ${version}"
     else
-      warn "Tool ${toolName} is not at version ${version}. Installing ${version}"
+      warn "Tool ${toolName} is at version ${currentVersion}. Installing ${version}"
       npm install "${toolName}@${version}" --registry="${npmUrl}" --global
     fi
   else
