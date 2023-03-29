@@ -33,5 +33,12 @@ Optionally, you can add this before sourcing `.ntw.sh` if you have a corporate p
 ----
 export NTW_NODE_DIST_URL=https://artifactory.mycompany.comp/nodejs-dist
 ----
-
++
 You can check in `yarnw` and `.ntw.sh` to your VCS.
++
+[source,bash]
+----
+curl -sL https://raw.githubusercontent.com/rahulsom/node-tool-wrapper/main/.ntw.sh -o .ntw.sh
+curl -sL https://raw.githubusercontent.com/rahulsom/node-tool-wrapper/main/yarnw -o yarnw
+chmod +x .ntw.sh yarnw
+----
