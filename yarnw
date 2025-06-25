@@ -5,4 +5,11 @@
 selectNode v16.13.1
 selectTool yarn 1.22.17
 
-exec yarn "$@"
+if [ "$@" == "" ] || [ "$1" == "install" ]; then
+  # retry up to 3 times to account for flakiness in module downloads
+  for i in $(seq 1 3); do
+    yarn "$@" && break
+  done
+else
+  yarn "$@"
+fi

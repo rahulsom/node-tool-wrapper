@@ -5,4 +5,11 @@
 selectNode v16.13.1
 selectTool npm 8.3.1
 
-exec npm "$@"
+if [ "$1" == "install" ]; then
+  # retry up to 3 times to account for flakiness in module downloads
+  for i in $(seq 1 3); do
+    npm "$@" && break
+  done
+else
+  npm "$@"
+fi
