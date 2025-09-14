@@ -1,4 +1,4 @@
-#!/usr/bin/env -S bash -i
+#!/bin/bash
 set -e
 
 # Fetch the latest Node.js versions and suggest LTS

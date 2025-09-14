@@ -6,6 +6,15 @@ Some projects have no information and leave you to guess.
 
 This project is inspired by Gradle's Wrapper.
 
+== Installation
+
+[source,bash]
+----
+curl https://raw.githubusercontent.com/rahulsom/node-tool-wrapper/refs/heads/main/install.sh -o /tmp/install.sh
+chmod +x /tmp/install.sh
+/tmp/install.sh
+----
+
 == Example
 
 1. Download `.ntw.sh` to your project's root directory.
