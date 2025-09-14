@@ -24,6 +24,7 @@ while true; do
 done
 
 while true; do
+  echo "Tool Examples: npm, yarn, pnpm, node"
   echo -n "What tool do you want to install? "
   read -r TOOL_PACKAGE
   if [[ $TOOL_PACKAGE =~ ^[a-z]+$ ]]; then
@@ -33,15 +34,17 @@ while true; do
   fi
 done
 
-while true; do
-  echo -n "What version of $TOOL_PACKAGE do you want to install? "
-  read -r TOOL_VERSION
-  if [[ $TOOL_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    break
-  else
-    echo "Invalid version number"
-  fi
-done
+if [[ $TOOL_PACKAGE != "node" ]]; then
+  while true; do
+    echo -n "What version of $TOOL_PACKAGE do you want to install? "
+    read -r TOOL_VERSION
+    if [[ $TOOL_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+      break
+    else
+      echo "Invalid version number"
+    fi
+  done
+fi
 
 {
   echo "#!/bin/bash"
@@ -49,7 +52,9 @@ done
   echo ". .ntw.sh"
   echo ""
   echo "selectNode v${NODE_VERSION}"
-  echo "selectTool ${TOOL_PACKAGE} ${TOOL_VERSION}"
+  if [[ $TOOL_PACKAGE != "node" ]]; then
+    echo "selectTool ${TOOL_PACKAGE} ${TOOL_VERSION}"
+  fi
   echo ""
   echo "${TOOL_PACKAGE} \"\$@\""
 } > "${TOOL_PACKAGE}w"
