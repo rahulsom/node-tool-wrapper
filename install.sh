@@ -23,8 +23,8 @@ done
 
 while true; do
   echo -n "What version of $TOOL_PACKAGE do you want to install? "
-  read -r NPM_VERSION
-  if [[ $NPM_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  read -r TOOL_VERSION
+  if [[ $TOOL_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     break
   else
     echo "Invalid version number"
@@ -37,7 +37,7 @@ done
   echo ". .ntw.sh"
   echo ""
   echo "selectNode v${NODE_VERSION}"
-  echo "selectTool ${TOOL_PACKAGE} ${NPM_VERSION}"
+  echo "selectTool ${TOOL_PACKAGE} ${TOOL_VERSION}"
   echo ""
   echo "${TOOL_PACKAGE} \"\$@\""
 } > "${TOOL_PACKAGE}w"
