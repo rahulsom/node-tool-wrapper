@@ -51,3 +51,36 @@ curl -sL https://raw.githubusercontent.com/rahulsom/node-tool-wrapper/main/.ntw.
 curl -sL https://raw.githubusercontent.com/rahulsom/node-tool-wrapper/main/yarnw -o yarnw
 chmod +x .ntw.sh yarnw
 ----
+
+== Renovate Bot integration
+
+You can configure https://docs.renovatebot.com/[Renovate Bot] to send PRs for node and tool versions with something like this.
+
+[source,json]
+----
+{
+  "customManagers": [
+    {
+      "customType": "regex",
+      "matchStrings": [
+        "selectNode +v(?<currentValue>.+?)\n"
+      ],
+      "managerFilePatterns": [
+        "/(^|/)(npmw|yarnw|nodew)$/"
+      ],
+      "datasourceTemplate": "node",
+      "depNameTemplate": "node"
+    },
+    {
+      "customType": "regex",
+      "matchStrings": [
+        "selectTool +(?<depName>[^ ]+) +(?<currentValue>.+?)\n"
+      ],
+      "managerFilePatterns": [
+        "/(^|/)(npmw|yarnw|nodew)$/"
+      ],
+      "datasourceTemplate": "npm"
+    }
+  ]
+}
+----
