@@ -22,6 +22,11 @@ def _run_docker_and_copy_wrapper(container_name, tool_name):
     return result.stdout
 
 
+def respond_to(child, marker, response):
+  child.expect(marker, timeout=30)
+  child.sendline(response)
+
+
 def test_preconfigured_npm():
     """Test that pre-configured npmw works correctly"""
     cwd = os.getcwd()
@@ -30,10 +35,8 @@ def test_preconfigured_npm():
         encoding='utf-8',
         timeout=60
     )
-    child.expect('#')
-    child.sendline('cd /workspace')
-    child.expect('#')
-    child.sendline('./npmw')
+    respond_to(child, '#', 'cd /workspace')
+    respond_to(child, '#', './npmw')
     child.expect('#', timeout=120)
     output = child.before
     assert 'npm@11.6.0' in output, f"Expected npm version 11.6.0, got: {output}"
@@ -50,12 +53,9 @@ def test_install_npm():
       timeout=60
     )
     try:
-      child.expect(NODE_MARKER, timeout=30)
-      child.sendline('22.0.0')
-      child.expect(TOOL_NAME_MARKER, timeout=30)
-      child.sendline('npm')
-      child.expect(TOOL_VERSION_MARKER_NPM, timeout=30)
-      child.sendline('10.0.0')
+      respond_to(child, NODE_MARKER, '22.0.0')
+      respond_to(child, TOOL_NAME_MARKER, 'npm')
+      respond_to(child, TOOL_VERSION_MARKER_NPM, '10.0.0')
       child.expect(pexpect.EOF, timeout=60)
     finally:
       child.close()
@@ -77,12 +77,9 @@ def test_install_yarn():
       timeout=60
     )
     try:
-      child.expect(NODE_MARKER, timeout=30)
-      child.sendline('20.0.0')
-      child.expect(TOOL_NAME_MARKER, timeout=30)
-      child.sendline('yarn')
-      child.expect(TOOL_VERSION_MARKER_YARN, timeout=30)
-      child.sendline('4.0.0')
+      respond_to(child, NODE_MARKER, '20.0.0')
+      respond_to(child, TOOL_NAME_MARKER, 'yarn')
+      respond_to(child, TOOL_VERSION_MARKER_YARN, '4.0.0')
       child.expect(pexpect.EOF, timeout=60)
     finally:
       child.close()
@@ -94,6 +91,7 @@ def test_install_yarn():
     assert 'selectTool yarn 4.0.0' in file_contents
     assert 'yarn "$@"' in file_contents
 
+
 def test_install_node():
     """Test install.sh creates nodew with correct configuration"""
     cwd = os.getcwd()
@@ -104,10 +102,8 @@ def test_install_node():
       timeout=60
     )
     try:
-      child.expect(NODE_MARKER, timeout=30)
-      child.sendline('20.0.0')
-      child.expect(TOOL_NAME_MARKER, timeout=30)
-      child.sendline('node')
+      respond_to(child, NODE_MARKER, '20.0.0')
+      respond_to(child, TOOL_NAME_MARKER, 'node')
       child.expect(pexpect.EOF, timeout=60)
     finally:
       child.close()
