@@ -2,5 +2,4 @@
 
 docker build -t ntw-test -f test.Dockerfile .
 
-./npmw install
-./npmw test
+uv run pytest -v tests/test_install.py
