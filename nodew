@@ -1,7 +1,0 @@
-#!/bin/bash
-
-. .ntw.sh
-
-selectNode v16.13.1
-
-exec node "$@"
