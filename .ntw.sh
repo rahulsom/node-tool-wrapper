@@ -195,17 +195,28 @@ checkForUpdate() {
 
   if [ $do_update_cache -eq 1 ]; then
     date +%s >"${NTW_HOME}/last-update-check"
+    set +e
     if [ -d "${NTW_HOME}/repo" ]; then
       (
         cd "${NTW_HOME}/repo"
         git pull
       )
+      git_result=$?
     else
       git clone https://github.com/rahulsom/node-tool-wrapper.git "${NTW_HOME}/repo"
+      git_result=$?
+    fi
+    set -e
+
+    if [ $git_result -ne 0 ]; then
+      warn "Failed to update node-tool-wrapper repository. GitHub may be unavailable. Continuing with cached version."
+      return 0
     fi
   fi
 
-  cmp -s "${NTW_HOME}/repo/.ntw.sh" "${BASH_SOURCE[0]}" || warn "Update available for node-tool-wrapper. Run './${BASH_SOURCE[0]} update' to update"
+  if [ -f "${NTW_HOME}/repo/.ntw.sh" ]; then
+    cmp -s "${NTW_HOME}/repo/.ntw.sh" "${BASH_SOURCE[0]}" || warn "Update available for node-tool-wrapper. Run './${BASH_SOURCE[0]} update' to update"
+  fi
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
