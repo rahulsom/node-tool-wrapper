@@ -9,3 +9,6 @@
 # UV
 *.egg-info
 .venv
+
+# Python
+node_tool_wrapper.egg-info/
