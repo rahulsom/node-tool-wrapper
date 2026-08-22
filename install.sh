@@ -37,11 +37,11 @@ done
 if [[ $TOOL_PACKAGE != "node" ]]; then
   echo "Fetching latest version of $TOOL_PACKAGE..."
   SUGGESTED_VERSION=$(curl -s "https://registry.npmjs.org/${TOOL_PACKAGE}/latest" | jq -r '.version')
-  
+
   if [[ -n "$SUGGESTED_VERSION" && "$SUGGESTED_VERSION" != "null" ]]; then
     echo "Suggested version: $SUGGESTED_VERSION"
   fi
-  
+
   while true; do
     echo -n "What version of $TOOL_PACKAGE do you want to install? "
     read -r TOOL_VERSION
@@ -56,7 +56,8 @@ fi
 {
   echo "#!/bin/bash"
   echo ""
-  echo ". .ntw.sh"
+  echo 'SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"'
+  echo '. "${SCRIPT_DIR}/.ntw.sh"'
   echo ""
   echo "selectNode v${NODE_VERSION}"
   if [[ $TOOL_PACKAGE != "node" ]]; then
