@@ -83,6 +83,28 @@ fi
 info "NTW_NPM_URL: $NTW_NPM_URL"
 
 # Usage:
+#   with_timeout <seconds> <command...>
+# Kills <command...> if it hasn't finished after <seconds>. Needed because a
+# blackholed connection (common behind corporate firewalls) can hang a plain
+# `git clone`/`git pull` well past curl/npm's own timeouts.
+with_timeout() {
+  local seconds=$1
+  shift
+  "$@" &
+  local cmd_pid=$!
+  (
+    sleep "$seconds"
+    kill -TERM "$cmd_pid" 2>/dev/null
+  ) &
+  local watchdog_pid=$!
+  local exit_code=0
+  wait "$cmd_pid" 2>/dev/null || exit_code=$?
+  kill "$watchdog_pid" 2>/dev/null
+  wait "$watchdog_pid" 2>/dev/null
+  return "$exit_code"
+}
+
+# Usage:
 #   selectNode <Version>
 # Examples:
 #   selectNode v16.13.1
@@ -111,7 +133,7 @@ selectNode() {
 
   debug "sha_url: $sha_url"
   local expected_sha
-  expected_sha=$(curl -s "$sha_url" 2>/dev/null | grep "$filename" | cut -d " " -f 1)
+  expected_sha=$(curl -s --connect-timeout 5 --max-time 30 "$sha_url" 2>/dev/null | grep "$filename" | cut -d " " -f 1)
   debug "expected_sha: $expected_sha"
   local actual_sha
 
@@ -120,13 +142,13 @@ selectNode() {
     debug "actual_sha: $actual_sha"
     if [ "$actual_sha" != "$expected_sha" ]; then
       warn "Cache invalid. Downloading $node_url to $cache_location"
-      curl -s "$node_url" -o "$cache_location"
+      curl -s --connect-timeout 5 --max-time 120 "$node_url" -o "$cache_location"
     else
       info "Using cached $filename from $cache_location"
     fi
   else
     info "Tar doesn't exist locally. Downloading $node_url to $cache_location"
-    curl -s "$node_url" -o "$cache_location"
+    curl -s --connect-timeout 5 --max-time 120 "$node_url" -o "$cache_location"
   fi
 
   if [ ! -d "$node_home" ]; then
@@ -162,11 +184,13 @@ selectTool() {
       info "Tool ${toolName} is already at version ${version}"
     else
       warn "Tool ${toolName} is at version ${currentVersion}. Installing ${version}"
-      npm install "${toolName}@${version}" --registry="${npmUrl}" --global
+      npm install "${toolName}@${version}" --registry="${npmUrl}" --global \
+        --fetch-timeout=15000 --fetch-retries=1 --fetch-retry-mintimeout=2000 --fetch-retry-maxtimeout=5000
     fi
   else
     info "Installing ${toolName} from ${npmUrl}@${version}"
-    npm install "${toolName}@${version}" --registry="${npmUrl}" --global
+    npm install "${toolName}@${version}" --registry="${npmUrl}" --global \
+      --fetch-timeout=15000 --fetch-retries=1 --fetch-retry-mintimeout=2000 --fetch-retry-maxtimeout=5000
   fi
 }
 
@@ -199,11 +223,11 @@ checkForUpdate() {
     if [ -d "${NTW_HOME}/repo" ]; then
       (
         cd "${NTW_HOME}/repo"
-        git pull
+        GIT_TERMINAL_PROMPT=0 with_timeout 30 git pull
       )
       git_result=$?
     else
-      git clone https://github.com/rahulsom/node-tool-wrapper.git "${NTW_HOME}/repo"
+      GIT_TERMINAL_PROMPT=0 with_timeout 30 git clone https://github.com/rahulsom/node-tool-wrapper.git "${NTW_HOME}/repo"
       git_result=$?
     fi
     set -e
