@@ -6,4 +6,4 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 selectNode v22.19.0
 selectTool npm 11.6.0
 
-npm "$@"
+exec npm "$@"

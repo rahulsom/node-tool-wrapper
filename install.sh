@@ -64,7 +64,7 @@ fi
     echo "selectTool ${TOOL_PACKAGE} ${TOOL_VERSION}"
   fi
   echo ""
-  echo "${TOOL_PACKAGE} \"\$@\""
+  echo "exec ${TOOL_PACKAGE} \"\$@\""
 } > "${TOOL_PACKAGE}w"
 chmod +x "${TOOL_PACKAGE}w"
 
