@@ -2,4 +2,4 @@
 
 docker build -t ntw-test -f test.Dockerfile .
 
-uv run pytest -v tests/
+exec uv run pytest -v tests/
