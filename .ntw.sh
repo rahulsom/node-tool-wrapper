@@ -19,7 +19,7 @@ COLOR_RED=1
 
 if [ "${USE_TPUT:-}" = "" ]; then
   set +e
-  tput sgr0 2>/tmp/tput.txt
+  tput sgr0 >/dev/null 2>/tmp/tput.txt
   if [ $? -eq 0 ]; then
     if [ $(wc -c /tmp/tput.txt | sed -E 's/^ +//g' | tr -s " " | cut -d " " -f 1) -gt 3 ]; then
       USE_TPUT=0
@@ -59,7 +59,7 @@ error() {
 }
 info "NTW_LOG_LEVEL: $NTW_LOG_LEVEL"
 
-NTW_HOME=${NTW_HOME:-"$HOME/.ntw"}
+NTW_HOME=${NTW_HOME:-"${HOME:-/tmp}/.ntw"}
 info "NTW_HOME: $NTW_HOME"
 if [ ! -d "$NTW_HOME" ]; then
   mkdir -p "$NTW_HOME"
@@ -68,13 +68,30 @@ fi
 NTW_NODE_DIST_URL=${NTW_NODE_DIST_URL:-"https://nodejs.org/dist"}
 info "NTW_NODE_DIST_URL: $NTW_NODE_DIST_URL"
 
-if [ -z ${NTW_NPM_URL:-''} ]; then
-  if [ -f .npmrc ]; then
-    npmrcUrl=$(cat .npmrc | grep -E "^registry *= *" | sed -e "s/ //g" | cut -d '=' -f 2)
-    if [ -n "$npmrcUrl" ]; then
-      debug "Found registry in .npmrc: $npmrcUrl. Using that to download npm packages."
-      NTW_NPM_URL=$npmrcUrl
+# Usage:
+#   registryFromNpmrc
+# Looks for a `registry = ...` line in the local .npmrc, falling back to
+# ~/.npmrc if the local one doesn't set one. Echoes the found value, or
+# nothing if neither file sets a registry.
+registryFromNpmrc() {
+  local npmrcFile
+  for npmrcFile in .npmrc "${HOME:-}/.npmrc"; do
+    if [ -n "$npmrcFile" ] && [ -f "$npmrcFile" ]; then
+      local npmrcUrl
+      npmrcUrl=$(cat "$npmrcFile" | grep -E "^registry *= *" | sed -e "s/ //g" | cut -d '=' -f 2)
+      if [ -n "$npmrcUrl" ]; then
+        debug "Found registry in $npmrcFile: $npmrcUrl"
+        echo "$npmrcUrl"
+        return 0
+      fi
     fi
+  done
+}
+
+if [ -z ${NTW_NPM_URL:-''} ]; then
+  npmrcUrl=$(registryFromNpmrc)
+  if [ -n "$npmrcUrl" ]; then
+    NTW_NPM_URL=$npmrcUrl
   fi
 fi
 if [ -z ${NTW_NPM_URL:-''} ]; then
@@ -110,6 +127,18 @@ with_timeout() {
 #   selectNode v16.13.1
 selectNode() {
   debug "selectNode $1"
+  local version=$1
+
+  if which node >/dev/null 2>&1; then
+    local currentVersion
+    currentVersion=$(node --version)
+    if [ "${currentVersion}" = "${version}" ]; then
+      info "System node is already at version ${version}. Using it instead of provisioning."
+      return 0
+    fi
+    debug "System node is at version ${currentVersion}, not ${version}. Provisioning."
+  fi
+
   debug "PWD: $(pwd)"
   local pwdmd5
   pwdmd5="$(pwd | md5sum | cut -d ' ' -f 1)"
@@ -118,7 +147,6 @@ selectNode() {
   local home_base="${NTW_HOME}/node/${pwdmd5}"
 
   local baseUrl=${NTW_NODE_DIST_URL}
-  local version=$1
   local os=${2:-$(uname -s | tr '[:upper:]' '[:lower:]')}
   local arch=${3:-$(uname -m | sed -e 's/^aarch64$/arm64/g' | sed -e 's/^x86_64/x64/g')}
 
@@ -167,12 +195,10 @@ selectTool() {
   debug "selectTool $1 $2"
   local toolName=$1
   local npmUrl=${NTW_NPM_URL}
-  if [ -f .npmrc ]; then
-    npmrcUrl=$(cat .npmrc | grep -E "^registry *= *" | sed -e "s/ //g" | cut -d '=' -f 2)
-    if [ -n "$npmrcUrl" ]; then
-      debug "Found registry in .npmrc: $npmrcUrl. Using that to download"
-      npmUrl=$npmrcUrl
-    fi
+  local npmrcUrl
+  npmrcUrl=$(registryFromNpmrc)
+  if [ -n "$npmrcUrl" ]; then
+    npmUrl=$npmrcUrl
   fi
   debug "npmUrl: $npmUrl"
   local version=$2
