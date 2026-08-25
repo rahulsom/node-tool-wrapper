@@ -10,8 +10,14 @@ dependencies = []
 dev = [
     "pexpect>=4.9.0",
     "pytest>=8.4.2",
+    "pytest-xdist>=3.6.1",
 ]
 
 [[tool.uv.index]]
 url = "https://pypi.org/simple"
 default = true
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:This process.*is multi-threaded, use of forkpty\\(\\) may lead to deadlocks in the child:DeprecationWarning",
+]
