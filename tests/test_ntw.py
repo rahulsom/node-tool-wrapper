@@ -92,6 +92,120 @@ def test_offline_env_skips_update_check():
         cleanup_container(child, container_name)
 
 
+def test_sourcing_with_no_home_does_not_crash():
+    """.ntw.sh must not rely on $HOME being set: some tools (e.g. Spotless's npm formatter)
+    launch child processes with a minimal environment that has PATH but no HOME."""
+    container_name = f"ntw-test-{os.getpid()}"
+    child = spawn_container(container_name)
+    try:
+        cmd = "env -i PATH=\"$PATH\" NTW_LOG_LEVEL=2 bash -c 'source /ntw/.ntw.sh; echo SOURCED_OK'"
+        respond_to(child, '#', cmd)
+        child.expect('#', timeout=30)
+        output = child.before
+        assert 'unbound variable' not in output, f"Got: {output}"
+        assert 'SOURCED_OK' in output, f"Expected successful sourcing, got: {output}"
+    finally:
+        cleanup_container(child, container_name)
+
+
+def test_sourcing_does_not_leak_escape_codes_to_stdout():
+    """The tput capability probe must not write its reset sequence to real stdout - callers
+    that treat a wrapped command's stdout as a clean protocol channel (e.g. Spotless reading
+    a version string) would otherwise get corrupted output."""
+    container_name = f"ntw-test-{os.getpid()}"
+    child = spawn_container(container_name)
+    try:
+        cmd = (
+            "bash -c 'export NTW_OFFLINE=1; source /ntw/.ntw.sh 2>/dev/null | od -An -tx1 | tr -d \" \\n\"; "
+            "echo; echo DONE_OD'"
+        )
+        respond_to(child, '#', cmd)
+        child.expect('#', timeout=30)
+        output = child.before
+        assert 'DONE_OD' in output, f"Got: {output}"
+        assert '1b28' not in output.lower(), (
+            f"Found a leaked escape sequence on stdout: {output}"
+        )
+    finally:
+        cleanup_container(child, container_name)
+
+
+def test_npmrc_registry_falls_back_to_home_npmrc():
+    """When the local .npmrc has no registry entry (or doesn't exist), fall back to ~/.npmrc"""
+    container_name = f"ntw-test-{os.getpid()}"
+    child = spawn_container(container_name)
+    try:
+        setup_cmd = (
+            "bash -c 'echo \"registry=https://home.registry.example.test/\" > ~/.npmrc "
+            "&& cd /workspace && rm -f .npmrc "
+            "&& NTW_LOG_LEVEL=2 source /ntw/.ntw.sh'"
+        )
+        respond_to(child, '#', setup_cmd)
+        child.expect('#', timeout=30)
+        output = child.before
+        assert 'NTW_NPM_URL: https://home.registry.example.test/' in output, f"Got: {output}"
+    finally:
+        cleanup_container(child, container_name)
+
+
+def test_npmrc_local_registry_takes_priority_over_home():
+    """A registry entry in the local .npmrc wins over one in ~/.npmrc"""
+    container_name = f"ntw-test-{os.getpid()}"
+    child = spawn_container(container_name)
+    try:
+        setup_cmd = (
+            "bash -c 'echo \"registry=https://home.registry.example.test/\" > ~/.npmrc "
+            "&& cd /workspace && echo \"registry=https://local.registry.example.test/\" > .npmrc "
+            "&& NTW_LOG_LEVEL=2 source /ntw/.ntw.sh'"
+        )
+        respond_to(child, '#', setup_cmd)
+        child.expect('#', timeout=30)
+        output = child.before
+        assert 'NTW_NPM_URL: https://local.registry.example.test/' in output, f"Got: {output}"
+    finally:
+        cleanup_container(child, container_name)
+
+
+def test_select_node_skips_download_when_system_node_matches():
+    """selectNode uses an already-installed system node of the requested version instead of downloading"""
+    container_name = f"ntw-test-{os.getpid()}"
+    child = spawn_container(container_name)
+    try:
+        setup_cmd = (
+            "mkdir -p /fakebin && printf '#!/bin/bash\\necho v18.20.4\\n' > /fakebin/node && chmod +x /fakebin/node"
+        )
+        respond_to(child, '#', setup_cmd)
+        child.expect('#', timeout=30)
+        setup_cmd = (
+            "PATH=/fakebin:$PATH NTW_LOG_LEVEL=2 NTW_OFFLINE=1 bash -c 'source /ntw/.ntw.sh; selectNode v18.20.4'"
+        )
+        respond_to(child, '#', setup_cmd)
+        child.expect('#', timeout=30)
+        output = child.before
+        assert 'Using it instead of provisioning' in output, f"Got: {output}"
+        assert 'Downloading' not in output, f"Expected no download, got: {output}"
+    finally:
+        cleanup_container(child, container_name)
+
+
+def test_select_node_download_has_a_connect_timeout():
+    """A curl call in selectNode against an unroutable host fails fast instead of hanging"""
+    container_name = f"ntw-test-{os.getpid()}"
+    child = spawn_container(container_name)
+    try:
+        cmd = (
+            "bash -c 'export NTW_LOG_LEVEL=2 NTW_NODE_DIST_URL=http://203.0.113.1/dist; "
+            "source /ntw/.ntw.sh; "
+            "time timeout 20 bash -c \"selectNode v18.20.4\" ; echo EXIT_CODE=$?'"
+        )
+        respond_to(child, '#', cmd)
+        child.expect('#', timeout=30)
+        output = child.before
+        assert 'EXIT_CODE=124' not in output, f"curl hung past the 20s outer timeout: {output}"
+    finally:
+        cleanup_container(child, container_name)
+
+
 def test_log_level_suppresses_console_output_but_not_log_file():
     """NTW_LOG_LEVEL gates what's printed to the console, but every message is always written to NTW_LOG_FILE"""
     container_name = f"ntw-test-{os.getpid()}"
