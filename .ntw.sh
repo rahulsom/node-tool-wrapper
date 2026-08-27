@@ -225,9 +225,38 @@ update() {
   exec cp "${NTW_HOME}/repo/.ntw.sh" "${BASH_SOURCE[0]}"
 }
 
+# Usage:
+#   syncRepoCache
+# Pulls (or clones) the cached copy of the node-tool-wrapper repo at
+# ${NTW_HOME}/repo. Returns non-zero if the git operation failed.
+syncRepoCache() {
+  date +%s >"${NTW_HOME}/last-update-check"
+  set +e
+  if [ -d "${NTW_HOME}/repo" ]; then
+    (
+      cd "${NTW_HOME}/repo"
+      GIT_TERMINAL_PROMPT=0 with_timeout 30 git pull
+    )
+    git_result=$?
+  else
+    GIT_TERMINAL_PROMPT=0 with_timeout 30 git clone https://github.com/rahulsom/node-tool-wrapper.git "${NTW_HOME}/repo"
+    git_result=$?
+  fi
+  set -e
+
+  if [ $git_result -ne 0 ]; then
+    warn "Failed to update node-tool-wrapper repository. GitHub may be unavailable. Continuing with cached version."
+    return 1
+  fi
+}
+
 checkForUpdate() {
   debug "Checking for update..."
-  if [ ! -f "${NTW_HOME}/last-update-check" ]; then
+  local force=${1:-0}
+  if [ "$force" -eq 1 ]; then
+    debug "Force flag set. Setting do_update_cache to 1"
+    do_update_cache=1
+  elif [ ! -f "${NTW_HOME}/last-update-check" ]; then
     debug "No last-update-check file found. Setting do_update_cache to 1"
     echo 0 >"${NTW_HOME}/last-update-check"
     do_update_cache=1
@@ -245,24 +274,7 @@ checkForUpdate() {
   fi
 
   if [ $do_update_cache -eq 1 ]; then
-    date +%s >"${NTW_HOME}/last-update-check"
-    set +e
-    if [ -d "${NTW_HOME}/repo" ]; then
-      (
-        cd "${NTW_HOME}/repo"
-        GIT_TERMINAL_PROMPT=0 with_timeout 30 git pull
-      )
-      git_result=$?
-    else
-      GIT_TERMINAL_PROMPT=0 with_timeout 30 git clone https://github.com/rahulsom/node-tool-wrapper.git "${NTW_HOME}/repo"
-      git_result=$?
-    fi
-    set -e
-
-    if [ $git_result -ne 0 ]; then
-      warn "Failed to update node-tool-wrapper repository. GitHub may be unavailable. Continuing with cached version."
-      return 0
-    fi
+    syncRepoCache || return 0
   fi
 
   if [ -f "${NTW_HOME}/repo/.ntw.sh" ]; then
@@ -274,6 +286,9 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   debug "script ${BASH_SOURCE[0]} is top level ..."
   if [ "$1" = "update" ]; then
     update
+  fi
+  if [ "${1:-}" = "--force" ]; then
+    checkForUpdate 1
   fi
 else
   debug "script ${BASH_SOURCE[0]} is being sourced ..."
