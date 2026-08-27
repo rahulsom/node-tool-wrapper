@@ -92,6 +92,25 @@ def test_offline_env_skips_update_check():
         cleanup_container(child, container_name)
 
 
+def test_force_flag_bypasses_update_check_freshness():
+    """Running .ntw.sh --force syncs the repo cache even when last-update-check is fresh"""
+    container_name = f"ntw-test-{os.getpid()}"
+    child = spawn_container(container_name)
+    try:
+        cmd = (
+            "bash -c 'export NTW_LOG_LEVEL=3 NTW_HOME=/tmp/ntw-force-test; "
+            "mkdir -p $NTW_HOME; date +%s > $NTW_HOME/last-update-check; "
+            "/ntw/.ntw.sh --force'"
+        )
+        respond_to(child, '#', cmd)
+        child.expect('#', timeout=60)
+        output = child.before
+        assert 'Force flag set. Setting do_update_cache to 1' in output, f"Got: {output}"
+        assert 'Cloning into' in output, f"Expected a repo clone despite fresh last-update-check, got: {output}"
+    finally:
+        cleanup_container(child, container_name)
+
+
 def test_sourcing_with_no_home_does_not_crash():
     """.ntw.sh must not rely on $HOME being set: some tools (e.g. Spotless's npm formatter)
     launch child processes with a minimal environment that has PATH but no HOME."""
