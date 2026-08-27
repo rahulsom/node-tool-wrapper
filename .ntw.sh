@@ -234,11 +234,12 @@ checkForUpdate() {
   else
     debug "last-update-check file found. Reading"
     last_update_check=$(cat "${NTW_HOME}/last-update-check")
+    LAST_UPDATED="$(date -r "$last_update_check" 2>/dev/null || date -d "@$last_update_check")"
     if [ $(($(date +%s) - $last_update_check)) -gt 604800 ]; then
-      debug "last-update-check is older than 7 days. Setting do_update_cache to 1"
+      debug "last-update-check ($LAST_UPDATED) is older than 7 days. Setting do_update_cache to 1"
       do_update_cache=1
     else
-      debug "last-update-check is younger than 7 days. Setting do_update_cache to 0"
+      debug "last-update-check ($LAST_UPDATED) is younger than 7 days. Setting do_update_cache to 0"
       do_update_cache=0
     fi
   fi
