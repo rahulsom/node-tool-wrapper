@@ -59,7 +59,7 @@ def test_install_npm():
     file_contents = _run_docker_and_copy_wrapper(container_name, 'npm')
 
     assert file_contents is not None
-    assert '#!/bin/bash' in file_contents
+    assert '#!/usr/bin/env bash' in file_contents
     assert 'selectNode v22.0.0' in file_contents
     assert 'selectTool npm 10.0.0' in file_contents
     assert 'npm "$@"' in file_contents
@@ -71,7 +71,7 @@ def test_install_yarn():
     file_contents = _run_docker_and_copy_wrapper(container_name, 'yarn')
 
     assert file_contents is not None
-    assert '#!/bin/bash' in file_contents
+    assert '#!/usr/bin/env bash' in file_contents
     assert 'selectNode v20.0.0' in file_contents
     assert 'selectTool yarn 4.0.0' in file_contents
     assert 'yarn "$@"' in file_contents
@@ -84,7 +84,7 @@ def test_install_node():
     file_contents = _run_docker_and_copy_wrapper(container_name, 'node')
 
     assert file_contents is not None
-    assert '#!/bin/bash' in file_contents
+    assert '#!/usr/bin/env bash' in file_contents
     assert 'selectNode v20.0.0' in file_contents
     # node wrapper should not have selectTool line
     assert 'selectTool' not in file_contents
