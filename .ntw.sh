@@ -77,7 +77,7 @@ registryFromNpmrc() {
   for npmrcFile in .npmrc "${HOME:-}/.npmrc"; do
     if [ -n "$npmrcFile" ] && [ -f "$npmrcFile" ]; then
       local npmrcUrl
-      npmrcUrl=$(cat "$npmrcFile" | grep -E "^registry *= *" | sed -e "s/ //g" | cut -d '=' -f 2)
+      npmrcUrl=$(grep -E "^registry *= *" "$npmrcFile" | sed -e "s/ //g" | cut -d '=' -f 2)
       if [ -n "$npmrcUrl" ]; then
         debug "Found registry in $npmrcFile: $npmrcUrl"
         echo "$npmrcUrl"
