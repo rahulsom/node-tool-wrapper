@@ -19,8 +19,7 @@ COLOR_RED=1
 
 if [ "${USE_TPUT:-}" = "" ]; then
   set +e
-  tput sgr0 >/dev/null 2>/tmp/tput.txt
-  if [ $? -eq 0 ]; then
+  if tput sgr0 >/dev/null 2>/tmp/tput.txt; then
     if [ "$(wc -c /tmp/tput.txt | sed -E 's/^ +//g' | tr -s " " | cut -d " " -f 1)" -gt "3" ]; then
       USE_TPUT=0
     else
@@ -33,9 +32,9 @@ if [ "${USE_TPUT:-}" = "" ]; then
 fi
 log() {
   TS="$(date +'%Y-%m-%dT%H:%M:%S%z')"
-  if [ ${NTW_LOG_LEVEL} -ge $1 ]; then
+  if [ "${NTW_LOG_LEVEL}" -ge "$1" ]; then
     if [ "${USE_TPUT}" = "1" ]; then
-      COLOR_SET=$(tput setaf $2)
+      COLOR_SET=$(tput setaf "$2")
       COLOR_RESET=$(tput sgr0)
     else
       COLOR_SET=""
@@ -88,13 +87,13 @@ registryFromNpmrc() {
   done
 }
 
-if [ -z ${NTW_NPM_URL:-''} ]; then
+if [ -z "${NTW_NPM_URL:-}" ]; then
   npmrcUrl=$(registryFromNpmrc)
   if [ -n "$npmrcUrl" ]; then
     NTW_NPM_URL=$npmrcUrl
   fi
 fi
-if [ -z ${NTW_NPM_URL:-''} ]; then
+if [ -z "${NTW_NPM_URL:-}" ]; then
   NTW_NPM_URL="https://registry.npmjs.org/"
 fi
 info "NTW_NPM_URL: $NTW_NPM_URL"
@@ -264,7 +263,7 @@ checkForUpdate() {
     debug "last-update-check file found. Reading"
     last_update_check=$(cat "${NTW_HOME}/last-update-check")
     LAST_UPDATED="$(date -r "$last_update_check" 2>/dev/null || date -d "@$last_update_check")"
-    if [ $(($(date +%s) - $last_update_check)) -gt 604800 ]; then
+    if [ $(($(date +%s) - last_update_check)) -gt 604800 ]; then
       debug "last-update-check ($LAST_UPDATED) is older than 7 days. Setting do_update_cache to 1"
       do_update_cache=1
     else
