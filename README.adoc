@@ -24,7 +24,8 @@ chmod +x /tmp/install.sh
 ----
 #!/bin/bash
 
-. .ntw.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+. ${SCRIPT_DIR}/.ntw.sh
 
 selectNode v16.13.1
 selectTool yarn 1.22.17
