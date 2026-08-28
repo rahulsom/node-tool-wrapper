@@ -100,7 +100,7 @@ def test_force_flag_bypasses_update_check_freshness():
         cmd = (
             "bash -c 'export NTW_LOG_LEVEL=3 NTW_HOME=/tmp/ntw-force-test; "
             "mkdir -p $NTW_HOME; date +%s > $NTW_HOME/last-update-check; "
-            "/ntw/.ntw.sh --force'"
+            "/ntw/.ntw.sh update --force'"
         )
         respond_to(child, '#', cmd)
         child.expect('#', timeout=60)
