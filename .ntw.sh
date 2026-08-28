@@ -278,7 +278,7 @@ checkForUpdate() {
   fi
 
   if [ -f "${NTW_HOME}/repo/.ntw.sh" ]; then
-    cmp -s "${NTW_HOME}/repo/.ntw.sh" "${BASH_SOURCE[0]}" || warn "Update available for node-tool-wrapper. Run './${BASH_SOURCE[0]} update' to update"
+    cmp -s "${NTW_HOME}/repo/.ntw.sh" "${BASH_SOURCE[0]}" || warn "Update available for node-tool-wrapper. Run '${BASH_SOURCE[0]} update' to update"
   fi
 }
 
