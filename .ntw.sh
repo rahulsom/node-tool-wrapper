@@ -283,11 +283,11 @@ checkForUpdate() {
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   debug "script ${BASH_SOURCE[0]} is top level ..."
-  if [ "$1" = "update" ]; then
-    update
-  fi
   if [ "${1:-}" = "--force" ]; then
     checkForUpdate 1
+  fi
+  if [ "$1" = "update" ]; then
+    update
   fi
 else
   debug "script ${BASH_SOURCE[0]} is being sourced ..."
