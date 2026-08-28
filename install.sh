@@ -54,7 +54,7 @@ if [[ $TOOL_PACKAGE != "node" ]]; then
 fi
 
 {
-  echo "#!/bin/bash"
+  echo "#!/usr/bin/env bash"
   echo ""
   echo 'SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"'
   echo '. "${SCRIPT_DIR}/.ntw.sh"'
